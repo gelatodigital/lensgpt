@@ -4,7 +4,7 @@
   "description": "Smart Oracle that pushes prices online every hour or when the price difference with the last price is greater or equal than 2%",
   "scripts": {
     "build": "yarn install && yarn compile && npx tsc",
-    "clean": "yarn hardhat clean && rm -rf node_modules && rm -rf dist",
+    "clean": "yarn hardhat clean && rm -rf dist",
     "compile": "npx hardhat compile --force",
     "deploy": "npx hardhat deploy",
     "test": "npx hardhat test",
@@ -61,7 +61,7 @@
     "web3.storage": "4.5.4"
   },
   "lint-staged": {
-    "*.*{js,json,md,ts,yml,yaml}": "prettier --write",
+    "*.*{js,json,md,ts,sol,yml,yaml}": "prettier --write",
     "*.*{ts,js}": "eslint -c .eslintrc.json"
   }
 }

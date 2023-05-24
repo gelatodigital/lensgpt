@@ -57,25 +57,15 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     provider
   );
 
-
-
   const availableNewcomers =
     (await lensGelatoGpt.availableNewcomers()) as boolean;
-
-
 
   const callDatas: Array<{ to: string; data: string }> = [];
   const blockTime = (await provider.getBlock("latest")).timestamp;
 
-
-
-  const timeElapsed = (blockTime - lastPostTime) >= INTERVAL_IN_MIN * 60;
-
-
+  const timeElapsed = blockTime - lastPostTime >= INTERVAL_IN_MIN * 60;
 
   const inRun = nextPromptIndex > 0 || (timeElapsed && nextPromptIndex == 0);
-
- 
 
   if (timeElapsed && nextPromptIndex == 0 && !availableNewcomers) {
     return {
@@ -84,12 +74,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     };
   }
 
-
   const prompts = await lensGelatoGpt.getPaginatedPrompts(
     nextPromptIndex,
     inRun
   );
-
 
   if (prompts.newcomersPointer > 0) {
     callDatas.push({

@@ -196,8 +196,6 @@ describe("GelatoLensGPT.sol", function () {
 
     expect(result.newcomersPointer).to.be.eq(3);
 
-
-
     expect(
       result.results.filter((fil) => fil.profileId.toString() != "0").length
     ).to.be.eq(6);
@@ -261,10 +259,7 @@ describe("GelatoLensGPT.sol", function () {
       value: initialPoolEth,
     });
 
-    await lensGelatoGPT
-      .connect(dedicatedMsgSenderSigner)
-      .updateNewcomersSet(5);
-
+    await lensGelatoGPT.connect(dedicatedMsgSenderSigner).updateNewcomersSet(5);
 
     let result = await lensGelatoGPT
       .connect(admin)
@@ -324,9 +319,7 @@ describe("GelatoLensGPT.sol", function () {
 
     expect(result.newcomersPointer).to.be.eq(3);
 
-    await lensGelatoGPT
-      .connect(dedicatedMsgSenderSigner)
-      .updateNewcomersSet(3);
+    await lensGelatoGPT.connect(dedicatedMsgSenderSigner).updateNewcomersSet(3);
 
     result = await lensGelatoGPT.connect(admin).getPaginatedPrompts(7, true);
 
@@ -372,22 +365,18 @@ describe("GelatoLensGPT.sol", function () {
       value: initialPoolEth,
     });
 
-    await lensGelatoGPT
-      .connect(dedicatedMsgSenderSigner)
-      .updateNewcomersSet(5);
+    await lensGelatoGPT.connect(dedicatedMsgSenderSigner).updateNewcomersSet(5);
 
     let result = await lensGelatoGPT
       .connect(admin)
       .getPaginatedPrompts(0, false);
 
-     expect(result.results.length).to.be.eq(10);
+    expect(result.results.length).to.be.eq(10);
 
-     expect(result.nextPromptIndex).to.be.eq(0);
+    expect(result.nextPromptIndex).to.be.eq(0);
 
-
-
-     expect(result.newcomersPointer).to.be.eq(10);
-     expect(+result.results[0].profileId.toString()).to.be.eq(15);
-     expect(+result.results[9].profileId.toString()).to.be.eq(10);
+    expect(result.newcomersPointer).to.be.eq(10);
+    expect(+result.results[0].profileId.toString()).to.be.eq(15);
+    expect(+result.results[9].profileId.toString()).to.be.eq(10);
   });
 });

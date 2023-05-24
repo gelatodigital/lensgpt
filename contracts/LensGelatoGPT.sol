@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import "hardhat/console.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
-import {ILensHub} from "./lens/ILensHub.sol";
+import {ILensHub} from "./vendor/lens/ILensHub.sol";
 import {
     AddressUpgradeable
 } from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
@@ -28,9 +27,8 @@ contract LensGelatoGPT is Proxied {
 
     mapping(uint256 => string) public promptByProfileId;
 
-    EnumerableSetUpgradeable.UintSet private _profiles;
-
-    EnumerableSetUpgradeable.UintSet private _newcomers;
+    EnumerableSetUpgradeable.UintSet private _newProfileIds;
+    EnumerableSetUpgradeable.UintSet private _profileIds;
 
     constructor(ILensHub _lensHub, address _dedicatedMsgSender) {
         lensHub = _lensHub;
@@ -74,11 +72,10 @@ contract LensGelatoGPT is Proxied {
             lensHub.getDispatcher(_profileId) == dedicatedMsgSender,
             "LensGelatoGPT.setPrompt: dispatcher"
         );
-        // If first propmt will track in newcomers enumerable map
 
-        _newcomers.add(_profileId);
+        _newProfileIds.add(_profileId);
+        _profileIds.add(_profileId);
 
-        _profiles.add(_profileId);
         promptByProfileId[_profileId] = _prompt;
     }
 
@@ -86,110 +83,74 @@ contract LensGelatoGPT is Proxied {
         uint256 _profileId
     ) external onlyProfileOwner(_profileId) {
         require(
-            _profiles.contains(_profileId),
+            _profileIds.contains(_profileId),
             "LensGelatoGPT.stopPrompt: 404"
         );
-        _profiles.remove(_profileId);
+        _newProfileIds.remove(_profileId);
+        _profileIds.remove(_profileId);
         delete promptByProfileId[_profileId];
     }
 
-    // Executed
-
-    function availableNewcomers() external view returns (bool available) {
-        available = _newcomers.length() > 0;
-    }
-
-    function updateNewcomersSet(
-        uint256 _toDeleteNewcomers
+    function removeNewProfileIds(
+        uint256[] calldata __profileIds
     ) external onlyDedicatedMsgSender {
-        uint256[] memory toDeleteArray = new uint256[](_toDeleteNewcomers);
-        for (uint256 i = 0; i < _toDeleteNewcomers; i++) {
-            uint256 profileId = _newcomers.at(i);
-            toDeleteArray[i] = profileId;
-        }
-         
-        for (uint256 i = 0; i < _toDeleteNewcomers; i++) {
-            _newcomers.remove(toDeleteArray[i]);
-        }
-           
+        for (uint256 i = 0; i < __profileIds.length; i++)
+            _newProfileIds.remove(__profileIds[i]);
     }
 
     function getPaginatedPrompts(
         uint256 _from,
-        bool _inRun
-    )
-        external
-        view
-        returns (
-            Prompt[] memory results,
-            uint256 nextPromptIndex,
-            uint256 newcomersPointer
-        )
-    {
-        // require(_from < _to, "LensGelatoGPT.getPaginatedPrompts: _to");
+        uint256 _to
+    ) external view returns (Prompt[] memory prompts) {
+        require(_from < _to, "LensGelatoGPT.getPaginatedPrompts: _to");
         require(
-            _from <= _profiles.length(),
+            _from <= _profileIds.length(),
             "LensGelatoGPT.getPaginatedPrompts: _from"
         );
 
-        nextPromptIndex = _from;
+        if (_to >= _profileIds.length()) _to = _profileIds.length();
 
-        // if (_to >= _profiles.length()) _to = _profiles.length();
-        newcomersPointer = 0;
-        uint256 resultsLength;
+        prompts = new Prompt[](_to - _from);
 
- 
+        for (uint256 i = _from; i < _to; i++) {
+            uint256 profileId = _profileIds.at(i);
 
-        // include newcomersinto results array;
-        (results, resultsLength) = getNewcomers();
-        newcomersPointer = newcomersPointer + resultsLength;
+            // Filter out users with wrong Dispatcher on Lens
+            if (lensHub.getDispatcher(profileId) != dedicatedMsgSender)
+                continue;
 
-        if (resultsLength == 10 || !_inRun) {
-            return (results, nextPromptIndex, newcomersPointer);
-        }
-
-        for (uint256 i = _from; i < _profiles.length(); i++) {
-            uint256 profileId = _profiles.at(i);
-            // check if dispatcher still valid
-            if (lensHub.getDispatcher(profileId) == dedicatedMsgSender) {
-                results[resultsLength] = getPrompt(profileId);
-                resultsLength++;
-                nextPromptIndex++;
-
-                if (resultsLength == 10) {
-                    return (results, nextPromptIndex, newcomersPointer);
-                }
-            }
+            prompts[i - _from] = Prompt(
+                profileId,
+                promptByProfileId[profileId]
+            );
         }
     }
 
-    //// internal Functions
-    function getNewcomers()
-        internal
-        view
-        returns (Prompt[] memory results, uint256 resultsLength)
-    {
-        results = new Prompt[](10);
+    function getNewPrompts() external view returns (Prompt[] memory prompts) {
+        uint256 length = _newProfileIds.length();
 
-        if (_newcomers.length() > 0) {
-            for (uint256 i = 0; i < _newcomers.length(); i++) {
-                uint256 profileId = _newcomers.at(i);
-                // check if dispatcher still valid
+        prompts = new Prompt[](length);
 
-                if (lensHub.getDispatcher(profileId) == dedicatedMsgSender) {
-                    results[resultsLength] = getPrompt(profileId);
-                    if (resultsLength == 10) {
-                        return (results, resultsLength);
-                    }
-                }
-                resultsLength++;
-            }
+        for (uint256 i = 0; i < length; i++) {
+            uint256 newProfileId = _newProfileIds.at(i);
+
+            // Filter out users with wrong Dispatcher on Lens
+            if (lensHub.getDispatcher(newProfileId) != dedicatedMsgSender)
+                continue;
+
+            prompts[i] = Prompt(newProfileId, promptByProfileId[newProfileId]);
         }
     }
 
-    function getPrompt(
-        uint256 profileId
-    ) internal view returns (Prompt memory prompt) {
-        prompt = Prompt(profileId, promptByProfileId[profileId]);
+    function getProfileIds() external view returns (uint256[] memory) {
+        return _profileIds.values();
+    }
+
+    function getNewProfileIds() external view returns (uint256[] memory) {
+        return _newProfileIds.values();
+    }
+
+    function areThereNewProfileIds() external view returns (bool) {
+        return _newProfileIds.length() > 0;
     }
 }

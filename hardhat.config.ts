@@ -24,7 +24,7 @@ const config: HardhatUserConfig = {
   w3f: {
     rootDir: "./src/web3-functions",
     debug: false,
-    networks: ["hardhat","mumbai"], //(multiChainProvider) injects provider for these networks
+    networks: ["hardhat", "mumbai"], //(multiChainProvider) injects provider for these networks
   },
   // hardhat-deploy
   namedAccounts: {
@@ -34,29 +34,29 @@ const config: HardhatUserConfig = {
     lensHub: {
       hardhat: "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
       polygon: "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
-      mumbai:"0x60Ae865ee4C725cd04353b5AAb364553f56ceF82"
+      mumbai: "0x60Ae865ee4C725cd04353b5AAb364553f56ceF82",
     },
     dedicatedMsgSender: {
       hardhat: "0xbb97656cd5fece3a643335d03c8919d5e7dcd225",
       polygon: "0xbb97656cd5fece3a643335d03c8919d5e7dcd225",
-      mumbai:"0xcc53666e25bf52c7c5bc1e8f6e1f6bf58e871659"
+      mumbai: "0xcc53666e25bf52c7c5bc1e8f6e1f6bf58e871659",
     },
-    collectModule:{
+    collectModule: {
       hardhat: "0xa31FF85E840ED117E172BC9Ad89E55128A999205",
       polygon: "0xa31FF85E840ED117E172BC9Ad89E55128A999205",
-      mumbai:"0x5E70fFD2C6D04d65C3abeBa64E93082cfA348dF8"
+      mumbai: "0x5E70fFD2C6D04d65C3abeBa64E93082cfA348dF8",
     },
   },
 
   networks: {
     hardhat: {
       forking: {
-        url: 'https://polygon-rpc.com',
-        //blockNumber: 16620765,
+        url: "https://polygon-rpc.com",
+        blockNumber: 43087643,
       },
     },
     localhost: {
-      url: 'http://localhost:8545',
+      url: "http://localhost:8545",
       chainId: 31337,
     },
     ethereum: {
@@ -72,7 +72,7 @@ const config: HardhatUserConfig = {
     polygon: {
       accounts: PK ? [PK] : [],
       chainId: 137,
-      url: 'https://polygon-rpc.com',
+      url: "https://polygon-rpc.com",
     },
   },
 

@@ -5,7 +5,7 @@
   "timeout": 30,
   "userArgs": {
     "lensGelatoGPT": "string",
-    "lensHubAddress":"string",
-    "collectModule":"string"
+    "lensHubAddress": "string",
+    "collectModule": "string"
   }
 }

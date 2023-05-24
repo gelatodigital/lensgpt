@@ -1,4 +1,4 @@
-import hre, {  } from "hardhat";
+import hre from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { sleep } from "../src/utils";
@@ -8,7 +8,6 @@ const isHardhat = hre.network.name === "hardhat";
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const { deployer, lensHub, dedicatedMsgSender } = await getNamedAccounts();
-
 
   if (!isHardhat) {
     console.log(

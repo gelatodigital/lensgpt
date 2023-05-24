@@ -145,7 +145,7 @@ describe.only("W3F", function () {
   it.only("W3F executes query properly 15", async () => {
     await setBalance(adminAddress, parseEther("1000"));
 
-    await mockProfiles(1,15, {
+    await mockProfiles(1, 15, {
       admin,
       dedicatedMsgSenderAddress,
       hre,
@@ -157,7 +157,7 @@ describe.only("W3F", function () {
       nextPromptIndex: "0",
       lastPostTime: "0",
     };
- 
+
     lensGelatoW3f = w3f.get("lens-ai");
     let w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
     w3fResultCall1.result = w3fResultCall1.result as Web3FunctionResultV2;
@@ -180,7 +180,7 @@ describe.only("W3F", function () {
   });
 
   it("W3F executes query properly 10", async () => {
-    await mockProfiles(1,10, {
+    await mockProfiles(1, 10, {
       admin,
       dedicatedMsgSenderAddress,
       hre,
