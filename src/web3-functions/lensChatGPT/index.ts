@@ -89,10 +89,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     for (const prompt of prompts) {
       i++
       profileIds.push(+prompt[0].toString());
-      console.log(i)
+   
   
     }
-    console.log(i,93)
+
     if (profileIds.length > 0) {
       callDatas.push({
         to: lensGelatoGPTAddress,
@@ -104,17 +104,19 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     }
   } else {
     
-    prompts = await lensGelatoGpt.getPaginatedPrompts(
-      nextPromptIndex,
-      nextPromptIndex + NUMBER_OF_POSTS_PER_RUN
+    const results= await lensGelatoGpt.getPaginatedPrompts(
+      nextPromptIndex
     );
+    prompts = results.prompts;
+    await storage.set("nextPromptIndex",results.nextPromptIndex.toString())
+
+
   }
 
   const promptsCleaned = prompts.filter(
     (fil: any) => fil.profileId.toString() != "0"
   ) as Array<string>;
-    console.log(areThereNewProfileIds)
-    console.log(prompts)
+
 
   for (const prompt of promptsCleaned) {
     
@@ -226,9 +228,10 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     }
     if (isLastRun) {
       await storage.set("nextPromptIndex", "0");
-    } else {
-      await storage.set("nextPromptIndex", (nextPromptIndex + NUMBER_OF_POSTS_PER_RUN).toString());
-    }
+    } 
+    // else {
+    //   await storage.set("nextPromptIndex", (nextPromptIndex + NUMBER_OF_POSTS_PER_RUN).toString());
+    // }
   }
   return {
     canExec: true,

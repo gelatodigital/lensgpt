@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.18;
-
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
 import {ILensHub} from "./vendor/lens/ILensHub.sol";
 import {
@@ -27,7 +26,6 @@ contract LensGelatoGPT is Proxied {
 
     mapping(uint256 => string) public promptByProfileId;
 
-  
     EnumerableSetUpgradeable.UintSet private _profileIds;
     EnumerableSetUpgradeable.UintSet private _newProfileIds;
 
@@ -101,31 +99,41 @@ contract LensGelatoGPT is Proxied {
     }
 
     function getPaginatedPrompts(
-        uint256 _from,
-        uint256 _to
-    ) external view returns (Prompt[] memory prompts) {
-        require(_from < _to, "LensGelatoGPT.getPaginatedPrompts: _to");
+        uint256 _from
+    ) external view returns (Prompt[] memory prompts, uint256 nextPromptIndex) {
+        // require(_from < _to, "LensGelatoGPT.getPaginatedPrompts: _to");
         require(
             _from <= _profileIds.length(),
             "LensGelatoGPT.getPaginatedPrompts: _from"
         );
 
-        if (_to >= _profileIds.length()) _to = _profileIds.length();
+        // if (_to >= _profileIds.length()) _to = _profileIds.length();
 
-        prompts = new Prompt[](_to - _from);
+        uint256 _to = _profileIds.length();
+
+        prompts = new Prompt[](5);
+        uint256 readyProfiles = _from;
 
         for (uint256 i = _from; i < _to; i++) {
             uint256 profileId = _profileIds.at(i);
-
+            nextPromptIndex = i;
             // Filter out users with wrong Dispatcher on Lens
             if (lensHub.getDispatcher(profileId) != dedicatedMsgSender)
                 continue;
-
-            prompts[i - _from] = Prompt(
+            
+            if (readyProfiles - _from == 5) break;
+    
+            prompts[readyProfiles - _from] = Prompt(
                 profileId,
                 promptByProfileId[profileId]
             );
+             readyProfiles++;
         }
+
+            if (readyProfiles - _from < 5)  {
+                nextPromptIndex++;
+            }
+
     }
 
     function getNewPrompts() external view returns (Prompt[] memory prompts) {

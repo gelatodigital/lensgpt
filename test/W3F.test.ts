@@ -169,7 +169,7 @@ describe("W3F", function () {
   });
 
 
-  it.only("W3F executes query properly 10 with wrong dispatcher", async () => {
+  it("W3F executes query properly 10 with wrong dispatcher", async () => {
     await mockProfiles(1, 10, {
       admin,
       dedicatedMsgSenderAddress,
@@ -226,7 +226,7 @@ describe("W3F", function () {
     expect(w3fResultCall1.result.canExec).to.be.eq(true);
 
     if (w3fResultCall1.result.canExec == true) {
-      expect(w3fResultCall1.result.callData.length).to.be.eq(16);
+      expect(w3fResultCall1.result.callData.length).to.be.eq(6);
       expect(w3fResultCall1.storage.storage.nextPromptIndex).to.be.eq("0");
 
       await setBalance(dedicatedMsgSenderAddress, parseEther("1"));
@@ -246,16 +246,17 @@ describe("W3F", function () {
     expect(w3fResultCall2.result.canExec).to.be.eq(true);
 
     if (w3fResultCall2.result.canExec == true) {
-      expect(w3fResultCall2.result.callData.length).to.be.eq(5);
-      expect(w3fResultCall2.storage.storage.nextPromptIndex).to.be.eq("5");
+      expect(w3fResultCall2.result.callData.length).to.be.eq(6);
+      expect(w3fResultCall2.storage.storage.nextPromptIndex).to.be.eq("0");
     }
 
-    storage.nextPromptIndex = "5";
+    storage.nextPromptIndex = "0";
     let w3fResultCall3 = await lensGelatoW3f.run({ userArgs, storage });
     expect(w3fResultCall3.result.canExec).to.be.eq(true);
+
     if (w3fResultCall3.result.canExec == true) {
-      expect(w3fResultCall3.result.callData.length).to.be.eq(5);
+      expect(w3fResultCall3.result.callData.length).to.be.eq(6);
     }
-    expect(w3fResultCall3.storage.storage.nextPromptIndex).to.be.eq("10");
+    expect(w3fResultCall3.storage.storage.nextPromptIndex).to.be.eq("0");
   });
 });

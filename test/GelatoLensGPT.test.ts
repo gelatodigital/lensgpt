@@ -6,7 +6,7 @@ import {
   setBalance,
 } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { BigNumber, Contract } from "ethers";
+import { BigNumber, Contract, constants } from "ethers";
 import hre, { deployments, ethers } from "hardhat";
 import { LensGelatoGPT, ILensHub } from "../typechain";
 import { lensHubAbi } from "../helpers/lensHubAbi";
@@ -155,7 +155,7 @@ describe("GelatoLensGPT.sol", function () {
   });
 
   it("GelatoLensGPT.getPaginatedPrompts: query", async () => {
-    await mockProfiles(1,15, {
+    await mockProfiles(1, 15, {
       admin,
       dedicatedMsgSenderAddress,
       hre,
@@ -163,18 +163,64 @@ describe("GelatoLensGPT.sol", function () {
       lensHub,
     });
 
-    expect(
-      (await lensGelatoGPT.connect(admin).getPaginatedPrompts(0, 10)).length
-    ).to.be.eq(10);
+    let paginatedResults = await lensGelatoGPT
+      .connect(admin)
+      .getPaginatedPrompts(0);
 
-    expect(
-      (await lensGelatoGPT.connect(admin).getPaginatedPrompts(10, 20)).length
-    ).to.be.eq(5);
+    let prompts = paginatedResults.prompts as Array<any>;
+    let nextPromptIndex = paginatedResults.nextPromptIndex;
+   
+
+    prompts = prompts.filter(
+      (fil: any) => fil.profileId.toString() != "0"
+    ) as Array<string>;
+
+    expect(prompts.length).to.be.eq(5);
+    expect(nextPromptIndex).to.be.eq(5);
+
+    const sevenProfileAddress = await lensHub.ownerOf(7);
+    await impersonateAccount(sevenProfileAddress);
+    const sevenProfile = await ethers.getSigner(sevenProfileAddress);
+    await lensHub.connect(sevenProfile).setDispatcher(7, constants.AddressZero);
+
+    paginatedResults = await lensGelatoGPT
+      .connect(admin)
+      .getPaginatedPrompts(5);
+
+    prompts = paginatedResults.prompts as Array<any>;
+    nextPromptIndex = paginatedResults.nextPromptIndex;
+
+
+ 
+    prompts = prompts.filter(
+      (fil: any) => fil.profileId.toString() != "0"
+    ) as Array<string>;
+
+    expect(prompts.length).to.be.eq(5);
+    expect(nextPromptIndex).to.be.eq(11);
+
+
+    paginatedResults = await lensGelatoGPT
+      .connect(admin)
+      .getPaginatedPrompts(11);
+
+    prompts = paginatedResults.prompts as Array<any>;
+    nextPromptIndex = paginatedResults.nextPromptIndex;
+
+
+
+    prompts = prompts.filter(
+      (fil: any) => fil.profileId.toString() != "0"
+    ) as Array<string>;
+ 
+    expect(prompts.length).to.be.eq(4);
+    expect(nextPromptIndex).to.be.eq(15);
+
+
   });
 
-
   it("GelatoLensGPT.getNewPrompts: query", async () => {
-    await mockProfiles(1,15, {
+    await mockProfiles(1, 15, {
       admin,
       dedicatedMsgSenderAddress,
       hre,
@@ -191,7 +237,9 @@ describe("GelatoLensGPT.sol", function () {
     let dedicatedMsgSenderSigner = await ethers.getSigner(
       dedicatedMsgSenderAddress
     );
-     await lensGelatoGPT.connect(dedicatedMsgSenderSigner).removeNewProfileIds([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
+    await lensGelatoGPT
+      .connect(dedicatedMsgSenderSigner)
+      .removeNewProfileIds([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 
     expect(
       (await lensGelatoGPT.connect(admin).getNewPrompts()).length

@@ -1,4 +1,4 @@
-export const promptAbi = [
+export const promptAbi =  [
   {
     "inputs": [
       {
@@ -111,11 +111,6 @@ export const promptAbi = [
         "internalType": "uint256",
         "name": "_from",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_to",
-        "type": "uint256"
       }
     ],
     "name": "getPaginatedPrompts",
@@ -136,6 +131,11 @@ export const promptAbi = [
         "internalType": "struct Prompt[]",
         "name": "prompts",
         "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nextPromptIndex",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
