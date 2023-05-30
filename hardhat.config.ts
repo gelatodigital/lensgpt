@@ -18,7 +18,7 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 // HardhatUserConfig bug
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config: HardhatUserConfig = {
-  defaultNetwork: "mumbai",
+  defaultNetwork: "hardhat",
 
   // web3 functions
   w3f: {
