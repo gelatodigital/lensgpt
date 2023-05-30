@@ -136,10 +136,14 @@ contract LensGelatoGPT is Proxied {
             uint256 newProfileId = _newProfileIds.at(i);
 
             // Filter out users with wrong Dispatcher on Lens
-            if (lensHub.getDispatcher(newProfileId) != dedicatedMsgSender)
-                continue;
-
-            prompts[i] = Prompt(newProfileId, promptByProfileId[newProfileId]);
+            if (lensHub.getDispatcher(newProfileId) != dedicatedMsgSender) {
+                prompts[i] = Prompt(newProfileId, "WRONG_DISPATCHER");
+            } else {
+                prompts[i] = Prompt(
+                    newProfileId,
+                    promptByProfileId[newProfileId]
+                );
+            }
         }
     }
 

@@ -194,6 +194,35 @@ describe("W3F", function () {
     if (w3fResultCall1.result.canExec == true) {
       expect(w3fResultCall1.result.callData.length).to.be.eq(5);
       expect(w3fResultCall1.storage.storage.nextPromptIndex).to.be.eq("0");
+
+      await admin.sendTransaction({
+        to: dedicatedMsgSenderAddress,
+        value: ethers.utils.parseEther("1"),
+        gasLimit: 10000000,
+      });
+      // @dev we take only the first callData (the remove profile)
+
+      const data = w3fResultCall1.result.callData[0];
+      await impersonateAccount(dedicatedMsgSenderAddress);
+      const dedicatedMsgSenderSigner = await ethers.getSigner(
+        dedicatedMsgSenderAddress
+      );
+      await dedicatedMsgSenderSigner.sendTransaction({
+        to: data.to,
+        data: data.data,
+      });
+
+      const remainingNewProfiles = await lensGelatoGPT.getNewProfileIds();
+      expect(
+        remainingNewProfiles.findIndex(
+          (newProfile) => newProfile.toString() == "4"
+        )
+      ).to.be.eq(-1);
+      expect(
+        remainingNewProfiles.findIndex(
+          (newProfile) => newProfile.toString() == "8"
+        )
+      ).to.be.not.eq(-1);
     }
   });
 

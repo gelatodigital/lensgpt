@@ -116,6 +116,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   );
 
   for (const prompt of nonEmptyPrompts) {
+    if (prompt.prompt == "WRONG_DISPATCHER") continue;
     const { chainId } = await provider.getNetwork();
 
     // // In hardhat test, skip ChatGPT call & IPFS publication
