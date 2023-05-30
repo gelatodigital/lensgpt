@@ -1,12 +1,10 @@
 import { Signer } from "@ethersproject/abstract-signer";
-import { AddressZero } from "@ethersproject/constants";
 import {
-  time as blockTime,
   impersonateAccount,
   setBalance,
 } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { BigNumber, Contract, constants } from "ethers";
+import { Contract, constants } from "ethers";
 import hre, { deployments, ethers, w3f } from "hardhat";
 import { LensGelatoGPT, ILensHub } from "../typechain";
 import { lensHubAbi } from "../helpers/lensHubAbi";
@@ -19,8 +17,6 @@ import { mockProfiles } from "./helpers/MockProfiles";
 import { parseEther } from "ethers/lib/utils";
 
 const FIRST_SENTENCE = "fist sentence";
-const LONG_SENTENCE =
-  "long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece";
 
 describe("W3F", function () {
   let admin: Signer; // proxyAdmin
@@ -125,9 +121,9 @@ describe("W3F", function () {
         value: ethers.utils.parseEther("1"),
         gasLimit: 10000000,
       });
-      let data = result.callData[1];
+      const data = result.callData[1];
       await impersonateAccount(dedicatedMsgSenderAddress);
-      let dedicatedMsgSenderSigner = await ethers.getSigner(
+      const dedicatedMsgSenderSigner = await ethers.getSigner(
         dedicatedMsgSenderAddress
       );
       await dedicatedMsgSenderSigner.sendTransaction({
@@ -157,7 +153,7 @@ describe("W3F", function () {
     };
 
     lensGelatoW3f = w3f.get("lensChatGPT");
-    let w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
+    const w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
     w3fResultCall1.result = w3fResultCall1.result as Web3FunctionResultV2;
 
     expect(w3fResultCall1.result.canExec).to.be.eq(true);
@@ -168,8 +164,7 @@ describe("W3F", function () {
     }
   });
 
-
-  it.only("W3F executes query properly 10 with wrong dispatcher", async () => {
+  it("W3F executes query properly 10 with wrong dispatcher", async () => {
     await mockProfiles(1, 10, {
       admin,
       dedicatedMsgSenderAddress,
@@ -187,15 +182,14 @@ describe("W3F", function () {
     await impersonateAccount(fourthProfileAddress);
     const fourthProfile = await ethers.getSigner(fourthProfileAddress);
     await lensHub
-    .connect(fourthProfile)
-    .setDispatcher(4, constants.AddressZero);
+      .connect(fourthProfile)
+      .setDispatcher(4, constants.AddressZero);
 
     lensGelatoW3f = w3f.get("lensChatGPT");
-    let w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
+    const w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
     w3fResultCall1.result = w3fResultCall1.result as Web3FunctionResultV2;
 
     expect(w3fResultCall1.result.canExec).to.be.eq(true);
-
 
     if (w3fResultCall1.result.canExec == true) {
       expect(w3fResultCall1.result.callData.length).to.be.eq(5);
@@ -220,18 +214,18 @@ describe("W3F", function () {
     };
 
     lensGelatoW3f = w3f.get("lensChatGPT");
-    let w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
+    const w3fResultCall1 = await lensGelatoW3f.run({ userArgs, storage });
     w3fResultCall1.result = w3fResultCall1.result as Web3FunctionResultV2;
 
     expect(w3fResultCall1.result.canExec).to.be.eq(true);
 
     if (w3fResultCall1.result.canExec == true) {
-      expect(w3fResultCall1.result.callData.length).to.be.eq(16);
+      expect(w3fResultCall1.result.callData.length).to.be.eq(6);
       expect(w3fResultCall1.storage.storage.nextPromptIndex).to.be.eq("0");
 
       await setBalance(dedicatedMsgSenderAddress, parseEther("1"));
       await impersonateAccount(dedicatedMsgSenderAddress);
-      let dedicatedMsgSenderSigner = await ethers.getSigner(
+      const dedicatedMsgSenderSigner = await ethers.getSigner(
         dedicatedMsgSenderAddress
       );
 
@@ -241,21 +235,20 @@ describe("W3F", function () {
       });
     }
 
-    let w3fResultCall2 = await lensGelatoW3f.run({ userArgs, storage });
+    const w3fResultCall2 = await lensGelatoW3f.run({ userArgs, storage });
 
     expect(w3fResultCall2.result.canExec).to.be.eq(true);
 
     if (w3fResultCall2.result.canExec == true) {
-      expect(w3fResultCall2.result.callData.length).to.be.eq(5);
-      expect(w3fResultCall2.storage.storage.nextPromptIndex).to.be.eq("5");
+      expect(w3fResultCall2.result.callData.length).to.be.eq(6);
+      expect(w3fResultCall2.storage.storage.nextPromptIndex).to.be.eq("0");
     }
 
-    storage.nextPromptIndex = "5";
-    let w3fResultCall3 = await lensGelatoW3f.run({ userArgs, storage });
+    const w3fResultCall3 = await lensGelatoW3f.run({ userArgs, storage });
     expect(w3fResultCall3.result.canExec).to.be.eq(true);
     if (w3fResultCall3.result.canExec == true) {
-      expect(w3fResultCall3.result.callData.length).to.be.eq(5);
+      expect(w3fResultCall3.result.callData.length).to.be.eq(6);
     }
-    expect(w3fResultCall3.storage.storage.nextPromptIndex).to.be.eq("10");
+    expect(w3fResultCall3.storage.storage.nextPromptIndex).to.be.eq("0");
   });
 });

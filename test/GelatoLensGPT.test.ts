@@ -1,12 +1,10 @@
 import { Signer } from "@ethersproject/abstract-signer";
-import { AddressZero } from "@ethersproject/constants";
 import {
-  time as blockTime,
   impersonateAccount,
   setBalance,
 } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { BigNumber, Contract } from "ethers";
+import { Contract } from "ethers";
 import hre, { deployments, ethers } from "hardhat";
 import { LensGelatoGPT, ILensHub } from "../typechain";
 import { lensHubAbi } from "../helpers/lensHubAbi";
@@ -16,7 +14,6 @@ import { parseEther } from "ethers/lib/utils";
 const FIRST_SENTENCE = "fist sentence";
 const LONG_SENTENCE =
   "long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece long sentece";
-const WITHDRAWAL_LOCK_PERIOD = 60 * 60 * 24 * 31 * 3;
 
 describe("GelatoLensGPT.sol", function () {
   let admin: Signer; // proxyAdmin
@@ -119,11 +116,11 @@ describe("GelatoLensGPT.sol", function () {
       .connect(firstProfile)
       .setPrompt(1, FIRST_SENTENCE, { value: ethers.utils.parseEther("1") });
 
-    let initialBalance = await firstProfile.getBalance();
+    const initialBalance = await firstProfile.getBalance();
 
     await lensGelatoGPT.collectFee(firstProfileAddress);
 
-    let finishBalance = await firstProfile.getBalance();
+    const finishBalance = await firstProfile.getBalance();
 
     expect(initialBalance.add(ethers.utils.parseEther("1"))).to.eq(
       finishBalance
@@ -155,7 +152,7 @@ describe("GelatoLensGPT.sol", function () {
   });
 
   it("GelatoLensGPT.getPaginatedPrompts: query", async () => {
-    await mockProfiles(1,15, {
+    await mockProfiles(1, 15, {
       admin,
       dedicatedMsgSenderAddress,
       hre,
@@ -172,9 +169,8 @@ describe("GelatoLensGPT.sol", function () {
     ).to.be.eq(5);
   });
 
-
   it("GelatoLensGPT.getNewPrompts: query", async () => {
-    await mockProfiles(1,15, {
+    await mockProfiles(1, 15, {
       admin,
       dedicatedMsgSenderAddress,
       hre,
@@ -188,10 +184,12 @@ describe("GelatoLensGPT.sol", function () {
 
     await setBalance(dedicatedMsgSenderAddress, parseEther("1"));
     await impersonateAccount(dedicatedMsgSenderAddress);
-    let dedicatedMsgSenderSigner = await ethers.getSigner(
+    const dedicatedMsgSenderSigner = await ethers.getSigner(
       dedicatedMsgSenderAddress
     );
-     await lensGelatoGPT.connect(dedicatedMsgSenderSigner).removeNewProfileIds([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
+    await lensGelatoGPT
+      .connect(dedicatedMsgSenderSigner)
+      .removeNewProfileIds([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 
     expect(
       (await lensGelatoGPT.connect(admin).getNewPrompts()).length
